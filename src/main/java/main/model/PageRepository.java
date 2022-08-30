@@ -52,6 +52,23 @@ public interface PageRepository extends CrudRepository<Page, Integer> {
     @Query(value = "DELETE FROM page WHERE site_id = :siteId", nativeQuery = true)
     void deleteBySiteId(@Param("siteId") int siteId);
 
+    /**
+     * Удаление всех страниц
+     */
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM page", nativeQuery = true)
+    void deleteAllPages();
+
+    /**
+     * Получение списка идентификаторов страниц,
+     * отсортированного по убыванию рассчитанного rank для каждой страницы.
+     * <p> Вспомогательный метод для обработки поисковых запросов
+     * @param pageIds список идентификаторов страниц, по которому будет проводиться поиск
+     * @param offset сдвиг от начала списка результатов
+     * @param limit количество результатов, которое необходимо вывести
+     * @return список идентификаторов страниц и рассчитанного rank для каждой страницы
+     */
     @Query(value = "select it.page_id, sum(it.rank) as sum_rank\n" +
             "from `index` as it\n" +
             "inner join page as pt\n" +

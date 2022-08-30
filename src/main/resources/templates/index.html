@@ -9,7 +9,7 @@
 <!--[if IE 9]>
 <html class="ie9" lang="ru">
 <![endif]-->
-<!--[if gt IE 9]><!--> <html lang="ru"> <!--<![endif]-->
+<!--[if gt IE 9]><!--> <html lang="ru" xmlns:th="http://www.thymeleaf.org"> <!--<![endif]-->
 <head>
   <title>Site Search Engine</title>
   <meta name="description" content="Site Search Engine">
@@ -28,9 +28,10 @@
   <link rel="stylesheet" href="/assets/css/extra.css?v=82368483"><!--[if lt IE 9]>
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 
-  <script>
-    // замените значение переменной на ваш бекенд, например http://localhost:8080
-     var backendApiUrl = 'http://localhost:8080'
+  <script th:inline="javascript">
+  /*<![CDATA[*/
+      var backendApiUrl = /*[[${backendUrl}]]*/;
+  /*]]>*/
   </script>
   
   <script defer src="/assets/js/scripts.js?v=38874866"></script>

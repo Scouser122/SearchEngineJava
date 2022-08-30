@@ -39,6 +39,8 @@ public class SearchServiceImpl implements SearchService {
     private static final int SNIPPET_WORDS_AFTER = 5;
 
     public JsonObject processSearch(String query, String siteUrl, int offset, int limit) {
+        query = query.toLowerCase();
+
         JsonObject result = new JsonObject();
         result.put("result", true);
         JsonArray arrayResult = new JsonArray();
@@ -151,7 +153,8 @@ public class SearchServiceImpl implements SearchService {
         Elements bodyElements = document.select("body");
         if (bodyElements.size() > 0) {
             String body = Objects.requireNonNull(bodyElements.first()).text();
-            String snippet = searchForSnippetInBody(body, query);
+            String bodyLowerCase = body.toLowerCase();
+            String snippet = searchForSnippetInBody(body, bodyLowerCase, query);
             if (!snippet.isEmpty()) {
                 result.put("snippet", snippet);
             }
@@ -166,16 +169,16 @@ public class SearchServiceImpl implements SearchService {
      * @param query поисковый запрос
      * @return найденный фрагмент текста
      */
-    private String searchForSnippetInBody(String body, String query) {
-        String snippet = getSnippetFromBody(body, query);
+    private String searchForSnippetInBody(String body, String bodyLowerCase, String query) {
+        String snippet = getSnippetFromBody(body, bodyLowerCase, query);
         if (snippet != null) {
             return snippet;
         }
-        snippet = findSnippetInQueryPart(body, query);
+        snippet = findSnippetInQueryPart(body, bodyLowerCase, query);
         if (snippet != null) {
             return snippet;
         }
-        return findSnippetQueryLemmas(body, query);
+        return findSnippetQueryLemmas(body, bodyLowerCase, query);
     }
 
     /**
@@ -184,7 +187,7 @@ public class SearchServiceImpl implements SearchService {
      * @param query поисковый запрос
      * @return найденный фрагмент текста
      */
-    private String findSnippetInQueryPart(String body, String query) {
+    private String findSnippetInQueryPart(String body, String bodyLowerCase, String query) {
         String snippet;
         String [] words = query.split(" ");
         if (words.length <= 1) {
@@ -195,7 +198,7 @@ public class SearchServiceImpl implements SearchService {
             int spacePos = fromEndToStart.lastIndexOf(" ");
             if (spacePos != -1) {
                 fromEndToStart = fromEndToStart.substring(0, spacePos);
-                snippet = getSnippetFromBody(body, fromEndToStart);
+                snippet = getSnippetFromBody(body, bodyLowerCase, fromEndToStart);
                 if (snippet != null) {
                     return snippet;
                 }
@@ -208,7 +211,7 @@ public class SearchServiceImpl implements SearchService {
             int spacePos = fromStartToEnd.indexOf(" ");
             if (spacePos != -1) {
                 fromStartToEnd = fromStartToEnd.substring(spacePos + 1);
-                snippet = getSnippetFromBody(body, fromStartToEnd);
+                snippet = getSnippetFromBody(body, bodyLowerCase, fromStartToEnd);
                 if (snippet != null) {
                     return snippet;
                 }
@@ -225,13 +228,13 @@ public class SearchServiceImpl implements SearchService {
      * @param query поисковый запрос
      * @return найденный фрагмент текста
      */
-    private String findSnippetQueryLemmas(String body, String query) {
+    private String findSnippetQueryLemmas(String body, String bodyLowerCase, String query) {
         String snippet;
         String [] words = query.split(" ");
         for (String word : words) {
             String wordPart = word;
             while (wordPart.length() > 1) {
-                snippet = getSnippetFromBody(body, wordPart);
+                snippet = getSnippetFromBody(body, bodyLowerCase, wordPart);
                 if (snippet != null) {
                     return snippet;
                 }
@@ -242,7 +245,7 @@ public class SearchServiceImpl implements SearchService {
         for (String lemmaString : lemmaStrings) {
             String wordPart = lemmaString;
             while (wordPart.length() > 1) {
-                snippet = getSnippetFromBody(body, wordPart);
+                snippet = getSnippetFromBody(body, bodyLowerCase, wordPart);
                 if (snippet != null) {
                     return snippet;
                 }
@@ -258,20 +261,21 @@ public class SearchServiceImpl implements SearchService {
      * @param searchString искомый текст
      * @return фрагмент с найденным текстом, null - если фрагмент не найден
      */
-    private String getSnippetFromBody(String body, String searchString) {
+    private String getSnippetFromBody(String body, String bodyLowerCase, String searchString) {
         if (searchString.isEmpty()) {
             return null;
         }
-        int queryStart = body.indexOf(searchString);
+        int queryStart = bodyLowerCase.indexOf(searchString);
         if (queryStart == -1) {
             return null;
         }
         int queryEnd = queryStart + searchString.length();
+        searchString = body.substring(queryStart, queryEnd);
         int snippetStart = queryStart;
         int wordsBefore = 0;
         while (wordsBefore < SNIPPET_WORDS_BEFORE && snippetStart != 0) {
             snippetStart--;
-            while (body.charAt(snippetStart) != ' ') {
+            while (snippetStart != 0 && body.charAt(snippetStart) != ' ') {
                 snippetStart--;
             }
             wordsBefore++;
@@ -280,7 +284,7 @@ public class SearchServiceImpl implements SearchService {
         int snippetEnd = queryEnd;
         while (wordsAfter < SNIPPET_WORDS_AFTER && snippetEnd != (body.length() - 1)) {
             snippetEnd++;
-            while (body.charAt(snippetEnd) != ' ') {
+            while (snippetEnd != (body.length() - 1) && body.charAt(snippetEnd) != ' ') {
                 snippetEnd++;
             }
             wordsAfter++;

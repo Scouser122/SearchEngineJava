@@ -62,4 +62,10 @@ public interface SiteService {
      * @param error текст ошибки
      */
     void setSiteError(Site site, String error);
+
+    /**
+     * Удаление одного сайта
+     * @param siteId идентификатор сайта
+     */
+    void deleteSite(int siteId);
 }

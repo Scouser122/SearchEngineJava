@@ -1,8 +1,10 @@
 package main.model;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.Tuple;
 import java.util.Set;
@@ -44,4 +46,13 @@ public interface SiteRepository extends CrudRepository<Site, Integer> {
             "on t1.page_id = t2.id\n" +
             "group by t2.site_id", nativeQuery = true)
     Iterable<Tuple> getSitesStats();
+
+    /**
+     * Удаление одного сайта
+     * @param siteId идентификатор сайта
+     */
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM site WHERE id = :siteId", nativeQuery = true)
+    void deleteSite(@Param("siteId") int siteId);
 }

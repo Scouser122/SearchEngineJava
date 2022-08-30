@@ -76,6 +76,28 @@ public class LemmaServiceImpl implements LemmaService {
         return lemmaRepository.getNumLemmas();
     }
 
+    public void cleanUpLemmas(Set<Integer> lemmaIds) {
+        synchronized (this) {
+            Iterable<Lemma> lemmas = lemmaRepository.findByIdIn(lemmaIds);
+            Set<Integer> lemmasToDelete = new HashSet<>();
+            ArrayList<Lemma> lemmasToUpdate = new ArrayList<>();
+            for (Lemma lemma : lemmas) {
+                if (lemma.getFrequency() > 1) {
+                    lemma.setFrequency(lemma.getFrequency() - 1);
+                    lemmasToUpdate.add(lemma);
+                } else {
+                    lemmasToDelete.add(lemma.getId());
+                }
+            }
+            if (!lemmasToUpdate.isEmpty()) {
+                lemmaRepository.saveAll(lemmasToUpdate);
+            }
+            if (!lemmasToDelete.isEmpty()) {
+                lemmaRepository.deleteLemmasByIds(lemmasToDelete);
+            }
+        }
+    }
+
     /**
      * Поиск слов на вебстранице
      * @param document обьект с текстом вебстраницы

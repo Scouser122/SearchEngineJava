@@ -13,6 +13,7 @@ public interface IndexService {
      * @param pageId идентификатор вебстраницы
      */
     void updateIndexes(ArrayList<Lemma> lemmas, int pageId);
+
     /**
      * Установка одинаковых значений 'rank' для идентичных лемм,
      * которые записываются в разные строки таблицы index,
@@ -21,6 +22,7 @@ public interface IndexService {
      * @param pageId идентификатор страницы
      */
     void alignLemmasRank(HashSet<Integer> lemmaIds, int pageId);
+
     /**
      * Удаление из таблицы индексов для указанных страниц
      * @param pageIds список идентификаторов страниц
@@ -35,4 +37,11 @@ public interface IndexService {
      * @return список идентификаторов лемм и страниц
      */
     ArrayList<Tuple> getLemmaIdsAndPageIdsSortedByFrequency(Set<String> lemmaNames);
+
+    /**
+     * Получение списка идентификаторов лемм, которые были найдены на указанных страницах
+     * @param pageIds список идентификаторов страниц
+     * @return список идентификаторов лемм
+     */
+    Set<Integer> getLemmaIdsForPageIds(Set<Integer> pageIds);
 }

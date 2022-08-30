@@ -62,10 +62,18 @@ public class IndexServiceImpl implements IndexService {
             }
         }
     }
+
     public ArrayList<Tuple> getLemmaIdsAndPageIdsSortedByFrequency(Set<String> lemmaNames) {
         if (lemmaNames.isEmpty()) {
             return new ArrayList<>();
         }
         return indexRepository.getLemmaIdsAndPageIdsSortedByFrequency(lemmaNames);
+    }
+
+    public Set<Integer> getLemmaIdsForPageIds(Set<Integer> pageIds) {
+        if (pageIds.isEmpty()) {
+            return new HashSet<>();
+        }
+        return indexRepository.getLemmaIdsForPageIds(pageIds);
     }
 }

@@ -9,6 +9,8 @@ This application gives ability to index websites and search text on this sites
 <img src="./readme_assets/search.png" width="80%">
 </p>
 
+Website example: http://1003707-cy28449.tmweb.ru/
+
 ## About project
 ### Used technologies and settings
 Backend of Search engine implemented with Spring Boot API

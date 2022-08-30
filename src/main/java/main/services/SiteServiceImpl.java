@@ -62,6 +62,7 @@ public class SiteServiceImpl implements SiteService {
                 this.indexWaitingPages();
             }
         });
+        cleanUpSites();
     }
 
     public Site getSite(String siteUrl, boolean createIfNotExist) {
@@ -201,6 +202,12 @@ public class SiteServiceImpl implements SiteService {
         }
     }
 
+    public void deleteSite(int siteId) {
+        synchronized (this) {
+            siteRepository.deleteSite(siteId);
+        }
+    }
+
     /**
      * @param value статус индексации, true если индексация в данный момент в процессе
      */
@@ -214,6 +221,8 @@ public class SiteServiceImpl implements SiteService {
      */
     private void clearSiteData(Site site) {
         Set<Integer> pageIds = pageService.getPageIdsForSite(site.getId());
+        Set<Integer> lemmaIds = indexService.getLemmaIdsForPageIds(pageIds);
+        lemmaService.cleanUpLemmas(lemmaIds);
         indexService.deleteIndexesForPages(pageIds);
         pageService.deletePagesForSite(site.getId());
     }
@@ -275,5 +284,27 @@ public class SiteServiceImpl implements SiteService {
             thread.start();
         }
         indexSiteThreads.clear();
+    }
+
+    /**
+     * Удаление из таблицы сайтов тех,
+     * которые не были найдены в application.yml
+     */
+    private void cleanUpSites() {
+        List<Map<String, String>> sitesInProps = appProperties.getSites();
+        Iterable<Site> savedSites = siteRepository.findAll();
+        for (Site site : savedSites) {
+            boolean foundSite = false;
+            for (Map<String, String> siteData : sitesInProps) {
+                String url = siteData.get("url");
+                if (url != null && url.equals(site.getUrl())) {
+                    foundSite = true;
+                }
+            }
+            if (!foundSite) {
+                clearSiteData(site);
+                deleteSite(site.getId());
+            }
+        }
     }
 }

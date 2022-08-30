@@ -67,11 +67,21 @@ public interface IndexRepository extends CrudRepository<Index, Integer> {
     @Query(value = "DELETE FROM `index` WHERE page_id in (:pageIds)", nativeQuery = true)
     void deleteByPageIds(@Param("pageIds") Set<Integer> pageIds);
 
-    @Query(value = "select count(distinct page_id)\n" +
-            "from `index`\n" +
-            "where lemma_id in (:lemmaIds)", nativeQuery = true)
-    Integer countPagesByLemmaIds(@Param("lemmaIds") Set<Integer> lemmaIds);
+    /**
+     * Удаление всех индексов
+     */
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM `index`", nativeQuery = true)
+    void deleteAllIndexes();
 
+    /**
+     * Получение списка идентификаторов лемм и страниц,
+     * отсортированных по параметру frequency леммы.
+     * <p>Вспомогательный метод для обработки поисковых запросов
+     * @param lemmaNames список имен лемм
+     * @return список идентификаторов лемм и страниц
+     */
     @Query(value = "select it.lemma_id, it.page_id\n" +
             "from `index` as it\n" +
             "inner join lemma as lt\n" +
@@ -79,4 +89,14 @@ public interface IndexRepository extends CrudRepository<Index, Integer> {
             "where lt.lemma in (:lemmaNames)\n" +
             "order by lt.frequency asc", nativeQuery = true)
     ArrayList<Tuple> getLemmaIdsAndPageIdsSortedByFrequency(@Param("lemmaNames") Set<String> lemmaNames);
+
+    /**
+     * Поиск уникальных идентификаторов лемм, которые были найдены на страницах
+     * @param pageIds идентификаторы страниц
+     * @return список идентификаторов лемм
+     */
+    @Query(value = "select distinct lemma_id \n" +
+            "from `index`\n" +
+            "where page_id in (:pageIds)", nativeQuery = true)
+    Set<Integer> getLemmaIdsForPageIds(@Param("pageIds") Set<Integer> pageIds);
 }

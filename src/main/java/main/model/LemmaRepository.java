@@ -1,7 +1,10 @@
 package main.model;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
@@ -17,6 +20,13 @@ public interface LemmaRepository extends CrudRepository<Lemma, Integer> {
     Iterable<Lemma> findByLemmaIn(Set<String> lemmas);
 
     /**
+     * Поиск списка лемм по идентификатору
+     * @param lemmaIds список идентификаторов лемм
+     * @return список лемм
+     */
+    Iterable<Lemma> findByIdIn(Set<Integer> lemmaIds);
+
+    /**
      * Поиск списка лемм по имени (отсортирован по возрастанию частоты леммы)
      * @param lemmas список имен лемм
      * @return список лемм
@@ -28,4 +38,13 @@ public interface LemmaRepository extends CrudRepository<Lemma, Integer> {
      */
     @Query(value = "SELECT COUNT(*) FROM lemma", nativeQuery = true)
     long getNumLemmas();
+
+    /**
+     * Удаление лемм по идентификатору
+     * @param lemmaIds список идентификаторов лемм
+     */
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM lemma WHERE id in (:lemmaIds)", nativeQuery = true)
+    void deleteLemmasByIds(@Param("lemmaIds") Set<Integer> lemmaIds);
 }
