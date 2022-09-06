@@ -87,7 +87,7 @@ public interface IndexRepository extends CrudRepository<Index, Integer> {
             "inner join lemma as lt\n" +
             "on it.lemma_id = lt.id\n" +
             "where lt.lemma in (:lemmaNames)\n" +
-            "order by lt.frequency asc", nativeQuery = true)
+            "order by lt.frequency asc, it.lemma_id", nativeQuery = true)
     ArrayList<Tuple> getLemmaIdsAndPageIdsSortedByFrequency(@Param("lemmaNames") Set<String> lemmaNames);
 
     /**
